@@ -1,0 +1,14 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+dimentionalAnalizer	../dimentionalAnalizer.py	/^def dimentionalAnalizer (distances) :$/;"	kind:function	line:6
+dimentionalAnalizer.py	../dimentionalAnalizer.py	1;"	kind:file	line:1
+getDistances	../dimentionalAnalizer.py	/^def getDistances (point) :$/;"	kind:function	line:13
+increase	../dimentionalAnalizer.py	/^increase = lambda x : x * 10$/;"	kind:variable	line:28
+np	../dimentionalAnalizer.py	/^import numpy as np$/;"	kind:namespace	line:1
+points	../dimentionalAnalizer.py	/^points = increase(points)$/;"	kind:variable	line:29
+points	../dimentionalAnalizer.py	/^points = np.random.rand(int(randNum[0] * 10), int(randNum[1] * 10))$/;"	kind:variable	line:27
+randNum	../dimentionalAnalizer.py	/^    randNum = np.random.rand(2, 1)$/;"	kind:variable	line:23

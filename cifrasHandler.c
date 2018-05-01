@@ -9,7 +9,7 @@ int main () {
     FILE * fp3;
     char current_char, to_replace = 'Z';
     int i, j, test = 1;
-    fp3 = fopen("execution.bat", "w");
+    fp3 = fopen("execution.sh", "w");
 
     for(i = 0; i < 16000; i = i+10){
 
