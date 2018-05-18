@@ -1,1 +1,9 @@
 *.json
+
+a = '10'
+while (not a[0] is '-') : 
+    if ((a[0]=='0') and (a[1]=='x')):
+            print (int (a ,0))
+    else:
+            print (hex(int(a)))
+    a = input()

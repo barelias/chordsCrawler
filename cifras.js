@@ -7,7 +7,7 @@ var json = { title : ""};
 var pagesToVisit = [];
 var frame;
 var song;
-var teste = 'https://www.cifraclub.com.br/letra/A/lista.html';
+var teste = 'https://www.cifraclub.com.br/letra/B/lista.html';
 var relativeLinks = { "Links" : []};
 var weber = [];
 var songNum = 0;
