@@ -119,6 +119,7 @@ function genCharArray(charA, charZ) {
 }
 
 a = genCharArray('B', 'Z')
+<<<<<<< HEAD
 console.log(a)
 var myMap = new Map()
 a.forEach((element) => {
@@ -131,3 +132,26 @@ a.forEach((element) => {
         }
     }
 })
+=======
+var myMap = new Map()
+c = new Promise(function(resolve, reject){
+    resolve(a.forEach((element) => {
+        d = new Promisse((resolve, reject) => {
+            resolve(navigate('https://www.cifraclub.com.br/letra/'+element+'/lista.html', element, myMap))
+        })
+        d.then(() => {
+            for (var i = 0; i < myMap.get(element); i++) {
+                weber[i] = 'https://www.cifraclub.com.br' + relativeLinks.Links[i];
+                try {
+                    navigateBands(weber[i], i);
+                } catch (err) {
+                }
+            }
+        })
+    }))
+})
+
+c.then(() => {
+    console.log(myMap)
+});
+>>>>>>> e46d035c59e88b38723080e602859a34de21c32b

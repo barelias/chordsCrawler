@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 *.json
 
 a = '10'
@@ -7,3 +8,6 @@ while (not a[0] is '-') :
     else:
             print (hex(int(a)))
     a = input()
+=======
+*.json
+>>>>>>> e46d035c59e88b38723080e602859a34de21c32b

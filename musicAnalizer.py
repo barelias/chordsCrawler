@@ -4,6 +4,7 @@ import re
 from progress.bar import Bar
 import numpy as np
 import codecs, json
+<<<<<<< HEAD
 import pprint
 import re
 
@@ -49,6 +50,25 @@ def discSubseq ( sequ, result ) :
 
     print ('return')
     return result
+=======
+
+def discSubseq ( sequ ) :
+    chord = []
+    if (len(sequ) > 2) :             
+        ch = sequ[1]
+        chord.append(ch)
+        i = 2
+        chcomp = sequ[2]
+        while ((chcomp != ch) and (i < len(sequ))) :
+            if (len(sequ) > (i)) :
+                chord.append(sequ[i])
+                chcomp = sequ[i]
+            i = i + 1
+
+    sequ = set(chord)
+    subset = list(sequ)
+    return subset
+>>>>>>> e46d035c59e88b38723080e602859a34de21c32b
 
 error = []
 path = "/home/dev_pitel/Documents/trabalho/python/chordsCrawler"
@@ -60,11 +80,19 @@ finalNotes = {'D':0}
 notes['C'] = {'D':[0,1,0]}
 # print (notes)
 totalChords = []
+<<<<<<< HEAD
 i = 0
 bar = Bar('Processing', max=len(glob.glob("*.json")))
 print (len(glob.glob("*.json")))
 for file in glob.glob("*.json"):
     print (file)
+=======
+
+bar = Bar('Processing', max=len(glob.glob("*.json")))
+
+for file in glob.glob("*.json"):
+    #print (file)
+>>>>>>> e46d035c59e88b38723080e602859a34de21c32b
     try :
         fp = open(file, "r")
         text = fp.read()
@@ -75,6 +103,7 @@ for file in glob.glob("*.json"):
                 chords[1] = chords[1].split('":["')[1]
             chords[len(chords) - 1] = chords[len(chords) - 1].split('"]}')[0]
 
+<<<<<<< HEAD
         # print(chords)
         lis = []
         print (chords)
@@ -142,6 +171,45 @@ for file in glob.glob("*.json"):
     bar.next()
 
 bar.finish()
+=======
+        chord = []
+        # print(chords)
+        chord = discSubseq(chords)
+        # print(chord)
+
+        for i in range(0, len(chord)):
+            for j in (0, len(chord)):
+                if (len(chord) > j and len(chord) > i and abs(i - j) < 10) :
+                    if (chord[i] in notes and chord[i] in finalNotes):
+                        if (chord[j] in notes[chord[i]]):
+                            notes[chord[i]][chord[j]][0] += abs(i-j)
+                            notes[chord[i]][chord[j]][1] += 1
+                            finalNotes[chord[i]][chord[j]] = notes[chord[i]][chord[j]][0] / notes[chord[i]][chord[j]][1] 
+                        else :
+                            notes[chord[i]][chord[j]] = [abs(i-j),1,abs(i-j)]
+                            finalNotes[chord[i]][chord[j]] = abs(i-j)
+                    else :
+                        notes[chord[i]] = {chord[j]:[0,1,0]}
+                        finalNotes[chord[i]] = {chord[j]:1}
+                        if (chord[j] in notes[chord[i]]):
+                            notes[chord[i]][chord[j]][0] += abs(i-j)                            
+                            notes[chord[i]][chord[j]][1] += 1
+                            finalNotes[chord[i]][chord[j]] = notes[chord[i]][chord[j]][0] / notes[chord[i]][chord[j]][1] 
+                        else :
+                            notes[chord[i]][chord[j]] = [abs(i-j),1,abs(i-j)]
+                            finalNotes[chord[i]][chord[j]] = abs(i-j)
+
+        # print (totalChords)
+
+    except ValueError :
+        error.append(ValueError)
+        #print (ValueError)
+    
+
+    #bar.next()
+
+#bar.finish()
+>>>>>>> e46d035c59e88b38723080e602859a34de21c32b
 
 '''
     Montando a tabela
@@ -152,7 +220,11 @@ minor           = ['Cm','Dm','Em','Fm','Gm','Am','Bm']
 sustenido       = ['C#','D#','F#','G#','A#']
 minorSustenido  = ['C#m','D#m','F#m','G#m','A#m']
 
+<<<<<<< HEAD
 group = major#+ sustenido + minorSustenido
+=======
+group = major + minor + sustenido + minorSustenido
+>>>>>>> e46d035c59e88b38723080e602859a34de21c32b
 table = np.zeros((len(group), len(group)))
 
 k = 0
@@ -171,7 +243,13 @@ for i in (group) :
                     table[k][p] = finalNotes[i][j]
                 else :
                     table[k][p] = -1
+<<<<<<< HEAD
             else :
+=======
+                    print (j,"not in final notes",i)
+            else :
+                print (i,"not in final notes")
+>>>>>>> e46d035c59e88b38723080e602859a34de21c32b
                 table[k][p] = -1
         except ValueError :
             print (ValueError)

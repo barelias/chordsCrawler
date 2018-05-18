@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 node cifra_2480.js
 node cifra_2490.js
 node cifra_2500.js
@@ -851,6 +852,8 @@ node cifra_10970.js
 node cifra_10980.js
 node cifra_10990.js
 node cifra_11000.js
+=======
+>>>>>>> e46d035c59e88b38723080e602859a34de21c32b
 node cifra_11010.js
 node cifra_11020.js
 node cifra_11030.js
