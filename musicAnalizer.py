@@ -1,4 +1,3 @@
-
 import os, glob
 import re
 from progress.bar import Bar
@@ -7,186 +6,269 @@ import codecs, json
 import pprint
 import re
 
+'''
+    Retorna um vetor de subsequencias a partir de uma sequencia primaria de acordes
+    params:
+        sequ: sequencia de acordes
+        result: vetor que armazena os resultados
+'''
 def discSubseq ( sequ, result ) :
 
-    
+    # transforma a sequencia de acordes em uma unica string
     st = "".join( sequ )
-    print ('joined')
     ch = ''
+    '''
+        Cria o padrao regex para capturar o vetor de acordes, os matchs sao da seguinte categoria:
+        o \w[CDEFGAB]{1,10} captura uma sequencia de 1 a 10 notas que se encaixem na descricao
+        a partir desse valor, ele procura uma parte da sequencia em que a primeira captura se repete depois
+        de dois caracteres, ou seja, numa sequencia "CDEEEEECDE", a primeira captura referenciada por
+        \1 e a string "CDE"
+    '''
     pattern = re.compile(r'(\w[CDEFGAB]{1,10})\w\w*\1')
-    major = ['C','D','E','F','G','A','B']    
+    # vetor de notas maiores
+    major = ['C','D','E','F','G','A','B']
+    # captura os matches de strings repetidas no vetor found    
     found = re.findall(pattern, st)
-    print ('founded')
-    if (len(found) == 0 and len(st) < 10) :
-        print ('return')    
+    # condicao de parada da funcao recursiva, ou seja, se nao for encontrado nada a funcao retorna
+    if (found == [] or len(st) < 10) :
+        ''' 
+            Resultado recebe a propria sequencia, pois como nao foi encontrado nada a propria sequencia e uma
+            subsequencia
+        '''
         result.append(st)
+        
         return result
+    # exauri a sequencia para evitar que existam subsequencias na sequencia encontrada
     while len(found) > 0 :
-        print ('found')    
+        # para cada subsequencia em found
         for i in found :
+            # contador de acordes encontrados na sequencia definida
             val = 0
+            # string para guardar a subsequencia
             ch = i            
+            # para cada caracter na string
             for j in i :
+                # se o caracter estivem em major
                 if j in major :
+                    # contador incrementado
                     val+=1    
+            # condicao de iniciacao
             if val>0 :
                 ch = i
+        # procura subsequencias na sequencia
         found = re.findall(pattern, ch)        
-    print (ch)
+    # novo vetor com a sequencia antiga excluindo a subsequencia encontrada
     nw = st.split(ch)
+    # o vetor de resultados finais recebem a ultima subsequencia encontrada
     result.append(ch)
+    # limpa o nw de valores vazios
     nw = [i for i in nw if i!='']    
-    print ('new ', nw)
     val = 0
-    print ('result ', result)
+    # para cada sequencia em nw
     for i in nw :
         for j in i:
             if j in major :
                 val+=1
+        # se ainda tiverem notas em nw
         if val > 0 :
-            print ('call', result, i)        
+            # executa uma recursao
             discSubseq ( i, result )
-
-    print ('return')
+    # retorna se todas as recursoes forem resolvidas
     return result
 
+def processing_notes( searchpath = '/' , group = 'major', artist = 'all', musicalStyle = 'all' ) :
 
-error = []
-path = "/home/dev_pitel/Documents/trabalho/python/chordsCrawler"
-os.chdir( path )
+    # inicializa os objetos que guardaraoas notas
+    error = []
+    notes = {'C':0}
+    finalNotes = {'D':0}
+    notes['C'] = {'D':[0,1,0]}
+    totalChords = []
+    i = 0
 
-notes = {'C':0}
-finalNotes = {'C':0}
-finalNotes = {'D':0}
-notes['C'] = {'D':[0,1,0]}
-# print (notes)
-totalChords = []
-i = 0
-bar = Bar('Processing', max=len(glob.glob("*.json")))
-print (len(glob.glob("*.json")))
-for file in glob.glob("*.json"):
-    print (file)
-    try :
-        fp = open(file, "r")
-        text = fp.read()
-        chords = text.split('":"')
-        if len(chords) > 2 :
-            chords = chords[2].split('","')
-            if len(chords[1].split('":["')) > 1 :
-                chords[1] = chords[1].split('":["')[1]
-            chords[len(chords) - 1] = chords[len(chords) - 1].split('"]}')[0]
+    # inicializa o diretorio searchpath para busca
+    os.chdir( searchpath )
 
+    # cria o iterador para os arquivos JSON da pasta 
+    bar = Bar('Processing', max=len(glob.glob("*.json")))
+    print ('Numeros de arquivos a serem processados: ' + str(len(glob.glob("*.json"))))
 
-        # print(chords)
-        lis = []
-        print (chords)
-        chords = chords[2:]
-        result = discSubseq(chords, [])
-        print ('RESULTS: ', result)
-        major = ['C','D','E','F','G','A','B']    
+    major           = ['C','D','E','F','G','A','B']
+    minor           = ['Cm','Dm','Em','Fm','Gm','Am','Bm']
+    sustenido       = ['C#','D#','F#','G#','A#']
+    minorSustenido  = ['C#m','D#m','F#m','G#m','A#m']
 
-        for val in result :
-            chord = []
-            count = -1
-            for i in val :
-                if i in major :
-                    count+=1
-                    chord.append('')
-                    chord[count] = i
-                else :
-                    chord.append('')                    
-                    chord[count]+=i
-            print ('CHORD', chord)
-            for i in range(0, len(chord)):
-                for j in (0, len(chord)):
-                    if (len(chord) > j and len(chord) > i and abs(i - j) < 10) :
-                        if (chord[i] in notes and chord[i] in finalNotes) and (chord[j] in notes and chord[j] in finalNotes):
-                            if (chord[j] in notes[chord[i]] and chord[i] in notes[chord[j]]):
-                                notes[chord[i]][chord[j]][0] += abs(i-j)
-                                notes[chord[i]][chord[j]][1] += 1
-                                finalNotes[chord[i]][chord[j]] = notes[chord[i]][chord[j]][0] / notes[chord[i]][chord[j]][1]
-                                notes[chord[j]][chord[i]][0] += abs(i-j)
-                                notes[chord[j]][chord[i]][1] += 1
-                                finalNotes[chord[j]][chord[i]] = notes[chord[j]][chord[i]][0] / notes[chord[j]][chord[i]][1] 
-    
-                            else :
-                                notes[chord[i]][chord[j]] = [abs(i-j),1,abs(i-j)]
-                                finalNotes[chord[i]][chord[j]] = abs(i-j)
-                                notes[chord[j]][chord[i]] = [abs(i-j),1,abs(i-j)]
-                                finalNotes[chord[j]][chord[i]] = abs(i-j)
+    note_group      = []
+    name_groups = group.split(' ')
+    if ('major' in name_groups) :
+        note_group = note_group + major
+    if ('minor' in name_groups) :
+        note_group = note_group + minor
+    if ('sustenido' in name_groups) :
+        note_group = note_group + sustenido
+    if ('minorSustenido' in name_groups) :
+        note_group = note_group + minorSustenido
 
-                        else :
-                            notes[chord[i]] = {chord[j]:[0,1,0]}
-                            notes[chord[j]] = {chord[i]:[0,1,0]}
-                            finalNotes[chord[i]] = {chord[j]:1}
-                            finalNotes[chord[j]] = {chord[i]:1}                        
-                            if (chord[j] in notes[chord[i]] and chord[i] in notes[chord[j]]):
-                                notes[chord[i]][chord[j]][0] += abs(i-j)                            
-                                notes[chord[i]][chord[j]][1] += 1
-                                notes[chord[j]][chord[i]][0] += abs(i-j)                            
-                                notes[chord[j]][chord[i]][1] += 1
+    # passando por todos os arquivos
+    for file in glob.glob("*.json"):
 
-                                finalNotes[chord[i]][chord[j]] = notes[chord[i]][chord[j]][0] / notes[chord[i]][chord[j]][1] 
-                                finalNotes[chord[j]][chord[i]] = notes[chord[j]][chord[i]][0] / notes[chord[j]][chord[i]][1]                             
-                            else :
-                                notes[chord[i]][chord[j]] = [abs(i-j),1,abs(i-j)]
-                                finalNotes[chord[i]][chord[j]] = abs(i-j)
-                                notes[chord[j]][chord[i]] = [abs(i-j),1,abs(i-j)]
-                                finalNotes[chord[j]][chord[i]] = abs(i-j)
-
-        print (totalChords)
-
-    except ValueError :
-        error.append(ValueError)
-        print (ValueError)
-    
-
-    bar.next()
-
-bar.finish()
-
-
-'''
-    Montando a tabela
-'''
-
-major           = ['C','D','E','F','G','A','B']
-minor           = ['Cm','Dm','Em','Fm','Gm','Am','Bm']
-sustenido       = ['C#','D#','F#','G#','A#']
-minorSustenido  = ['C#m','D#m','F#m','G#m','A#m']
-
-group = major#+ sustenido + minorSustenido
-table = np.zeros((len(group), len(group)))
-
-k = 0
-p = 0
-
-for i in finalNotes :
-    if i in (group) :
-        print (finalNotes[i])
-#print ('MAJOR: ', major)
-for i in (group) :
-    for j in (group) :
+        print ('Processando o arquivo: ' + file)
+        # comeca a processar
         try :
-            if (i in finalNotes) :
-                if (j in finalNotes[i]) :
-                    #print (i, j)
-                    table[k][p] = finalNotes[i][j]
+            # abre o arquivo em modo de leitura
+            fp = open(file, "r")
+            # le todo o conteudo do json
+            text = fp.read()
+            # da um split para deixar apenas as notas
+            chords = text.split('":"')
+
+            try :
+
+                if len(chords) > 1 :
+                    songname = chords[1].split('","')
+                    if len(songname) > 0 :
+                        songname = songname[0]                    
+                        if len(chords) > 2 :
+                            chords = chords[2].split('","')
+                            if len(chords[1].split('":["')) > 1 :
+                                chords[1] = chords[1].split('":["')[1]
+                            chords[len(chords) - 1] = chords[len(chords) - 1].split('"]}')[0]
+                        genre = chords[0]
+            except ValueError :
+                error.append(ValueError)
+                print ('error: ', ValueError)
+
+            if ((genre == musicalStyle) or (musicalStyle == 'all')) :
+                print ('Genre: ' + str(genre) + '\nSongname: ' + str(songname))            
+                # print('Sequencia de notas encontradas :' + str(chords))
+                chords = chords[2:]
+                result = discSubseq(chords, [])
+                print ('RESULTS: ', result)
+                major = ['C','D','E','F','G','A','B']    
+
+                for val in result :
+                    chord = []
+                    count = -1
+                    for i in val :
+                        if i in major :
+                            count+=1
+                            chord.append('')
+                            chord[count] = i
+                        else :
+                            chord.append('')                    
+                            chord[count]+=i
+                    print ('CHORD', chord)
+                    for i in range(0, len(chord)):
+                        for j in (0, len(chord)):
+                            if (len(chord) > j and len(chord) > i and abs(i - j) < 10) :
+                                if (chord[i] in notes and chord[i] in finalNotes) and (chord[j] in notes and chord[j] in finalNotes):
+                                    if (chord[j] in notes[chord[i]] and chord[i] in notes[chord[j]]):
+                                        notes[chord[i]][chord[j]][0] += abs(i-j)
+                                        notes[chord[i]][chord[j]][1] += 1
+                                        finalNotes[chord[i]][chord[j]] = notes[chord[i]][chord[j]][0] / notes[chord[i]][chord[j]][1]
+                                        notes[chord[j]][chord[i]][0] += abs(i-j)
+                                        notes[chord[j]][chord[i]][1] += 1
+                                        finalNotes[chord[j]][chord[i]] = notes[chord[j]][chord[i]][0] / notes[chord[j]][chord[i]][1] 
+
+                                    else :
+                                        notes[chord[i]][chord[j]] = [abs(i-j),1,abs(i-j)]
+                                        finalNotes[chord[i]][chord[j]] = abs(i-j)
+                                        notes[chord[j]][chord[i]] = [abs(i-j),1,abs(i-j)]
+                                        finalNotes[chord[j]][chord[i]] = abs(i-j)
+
+                                else :
+                                    notes[chord[i]] = {chord[j]:[0,1,0]}
+                                    notes[chord[j]] = {chord[i]:[0,1,0]}
+                                    finalNotes[chord[i]] = {chord[j]:1}
+                                    finalNotes[chord[j]] = {chord[i]:1}                        
+                                    if (chord[j] in notes[chord[i]] and chord[i] in notes[chord[j]]):
+                                        notes[chord[i]][chord[j]][0] += abs(i-j)                            
+                                        notes[chord[i]][chord[j]][1] += 1
+                                        notes[chord[j]][chord[i]][0] += abs(i-j)                            
+                                        notes[chord[j]][chord[i]][1] += 1
+
+                                        finalNotes[chord[i]][chord[j]] = notes[chord[i]][chord[j]][0] / notes[chord[i]][chord[j]][1] 
+                                        finalNotes[chord[j]][chord[i]] = notes[chord[j]][chord[i]][0] / notes[chord[j]][chord[i]][1]                             
+                                    else :
+                                        notes[chord[i]][chord[j]] = [abs(i-j),1,abs(i-j)]
+                                        finalNotes[chord[i]][chord[j]] = abs(i-j)
+                                        notes[chord[j]][chord[i]] = [abs(i-j),1,abs(i-j)]
+                                        finalNotes[chord[j]][chord[i]] = abs(i-j)
+
+                print (totalChords)
+
+        except ValueError :
+            error.append(ValueError)
+            print (ValueError)
+
+
+        bar.next()
+
+    bar.finish()
+
+    return finalNotes
+
+'''
+    Dados os arquivos json em search path, cria um arquivo em resultpath de distancias de acordes dados
+    os parametros
+'''
+def create_json( searchpath = '/' ,resultpath = '/home/dev_pitel', group = 'major', artist = 'all', musicalStyle = 'all') :
+    
+    finalNotes = processing_notes( searchpath, group, artist, musicalStyle )
+
+    '''
+        Montando a tabela
+    '''
+
+    major           = ['C','D','E','F','G','A','B']
+    minor           = ['Cm','Dm','Em','Fm','Gm','Am','Bm']
+    sustenido       = ['C#','D#','F#','G#','A#']
+    minorSustenido  = ['C#m','D#m','F#m','G#m','A#m']
+
+    note_group      = []
+    name_groups = group.split(' ')
+    if ('major' in name_groups) :
+        note_group = note_group + major
+    if ('minor' in name_groups) :
+        note_group = note_group + minor
+    if ('sustenido' in name_groups) :
+        note_group = note_group + sustenido
+    if ('minorSustenido' in name_groups) :
+        note_group = note_group + minorSustenido
+
+    table = np.zeros((len(note_group), len(note_group)))
+
+    k = 0
+    p = 0
+
+    for i in finalNotes :
+        if i in (note_group) :
+            print (finalNotes[i])
+    #print ('MAJOR: ', major)
+    for i in (note_group) :
+        for j in (note_group) :
+            try :
+                if (i in finalNotes) :
+                    if (j in finalNotes[i]) :
+                        #print (i, j)
+                        table[k][p] = finalNotes[i][j]
+                    else :
+                        table[k][p] = -1
+
                 else :
                     table[k][p] = -1
+            except ValueError :
+                print (ValueError)
+            p+=1
+        k+=1
+        p=0
 
-            else :
-                table[k][p] = -1
-        except ValueError :
-            print (ValueError)
-        p+=1
-    k+=1
-    p=0
+    b = table.tolist()
+    k = 0
+    for i in (note_group) :
+        print ('"',i, '": ', b[k], ',')
+        k+=1
+    file_path = resultpath + "table.json"
+    json.dump(b, codecs.open(file_path, 'w', encoding='utf-8'), separators=(',', ':'), sort_keys=True, indent=4)
 
-b = table.tolist()
-k = 0
-for i in (group) :
-    print ('"',i, '": ', b[k], ',')
-    k+=1
-file_path = path + "table.json"
-json.dump(b, codecs.open(file_path, 'w', encoding='utf-8'), separators=(',', ':'), sort_keys=True, indent=4)
+create_json( searchpath='data/', resultpath='/home/dev_pitel/Documents/trabalho/python/chordsCrawler/results/', group='major minor', musicalStyle='all')
