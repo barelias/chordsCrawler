@@ -89,6 +89,7 @@ async function scrapChords(website, title) {
     
     frame = {
         "Songname": "h1.t1",
+        "Artist": " h2.t3",
         "Genre": "[itemprop=title]",
         "Chords": ["pre b"]
     }
@@ -99,7 +100,7 @@ async function scrapChords(website, title) {
     var fileTitle = (name.replace('/', replaceValue = '')).replace('/', '');
 
     if (!fileTitle.includes('letra')){
-        fs.writeFile(fileTitle.replace('/',''), JSON.stringify(song, null), function(err){
+        fs.writeFile(fileTitle.replace('/data/',''), JSON.stringify(song, null), function(err){
         })
     }
 

@@ -121,27 +121,36 @@ def processing_notes( searchpath = '/' , group = 'major', artist = 'all', musica
             text = fp.read()
             # da um split para deixar apenas as notas
             chords = text.split('":"')
-
+            # regex para achar os campos
+            songnamepattern = re.compile(r'"Songname":"([a-zA-Z\d\s]*)"')
+            songname = re.findall(songnamepattern, text)
+            artistpattern = re.compile(r'"Artist":"([a-zA-Z\d\s]*)"')
+            artistname = re.findall(artistpattern, text)
+            genrepattern = re.compile(r'"Genre":"([a-zA-Z\d\s]*)"')
+            genre = re.findall(genrepattern, text)
+            chordspattern = re.compile(r'"Chords":\["([a-zA-Z\d\s",#]*)"]}')
+            chords = re.findall(chordspattern, text)
+            success = 0
             try :
-
-                if len(chords) > 1 :
-                    songname = chords[1].split('","')
-                    if len(songname) > 0 :
-                        songname = songname[0]                    
-                        if len(chords) > 2 :
-                            chords = chords[2].split('","')
-                            if len(chords[1].split('":["')) > 1 :
-                                chords[1] = chords[1].split('":["')[1]
-                            chords[len(chords) - 1] = chords[len(chords) - 1].split('"]}')[0]
-                        genre = chords[0]
-            except ValueError :
+                chords = chords[0].split('","')
+                songname = songname[0]
+                genre = genre[0]
+                artistname = artistname[0]
+                success = 1
+            except :
+                success = 0
                 error.append(ValueError)
-                print ('error: ', ValueError)
+                print(ValueError)
+
+            if success is 1 :
+                print('Songname: '+str(songname))
+                print('Genre: '+str(genre))
+                print('Artist Name: '+str(artistname))
+                print('Chords: '+str(chords))
 
             if ((genre == musicalStyle) or (musicalStyle == 'all')) :
                 print ('Genre: ' + str(genre) + '\nSongname: ' + str(songname))            
                 # print('Sequencia de notas encontradas :' + str(chords))
-                chords = chords[2:]
                 result = discSubseq(chords, [])
                 print ('RESULTS: ', result)
                 major = ['C','D','E','F','G','A','B']    
@@ -235,7 +244,8 @@ def create_json( searchpath = '/' ,resultpath = '/home/dev_pitel', group = 'majo
         note_group = note_group + sustenido
     if ('minorSustenido' in name_groups) :
         note_group = note_group + minorSustenido
-
+    if ('all' in name_groups) :
+        note_group = major + minor + sustenido + minorSustenido
     table = np.zeros((len(note_group), len(note_group)))
 
     k = 0
@@ -253,10 +263,10 @@ def create_json( searchpath = '/' ,resultpath = '/home/dev_pitel', group = 'majo
                         #print (i, j)
                         table[k][p] = finalNotes[i][j]
                     else :
-                        table[k][p] = -1
+                        table[k][p] = float('nan')
 
                 else :
-                    table[k][p] = -1
+                    table[k][p] = float('nan')
             except ValueError :
                 print (ValueError)
             p+=1
@@ -271,4 +281,4 @@ def create_json( searchpath = '/' ,resultpath = '/home/dev_pitel', group = 'majo
     file_path = resultpath + "table.json"
     json.dump(b, codecs.open(file_path, 'w', encoding='utf-8'), separators=(',', ':'), sort_keys=True, indent=4)
 
-create_json( searchpath='data/', resultpath='/home/dev_pitel/Documents/trabalho/python/chordsCrawler/results/', group='major minor', musicalStyle='all')
+create_json( searchpath='data/', resultpath='/home/dev_pitel/Documents/trabalho/python/chordsCrawler/results/', group='all', musicalStyle='all')
